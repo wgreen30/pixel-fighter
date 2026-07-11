@@ -1,0 +1,14 @@
+# Required local game assets
+
+The current code expects these files in the repository root:
+
+- `background.PNG`
+- `healthbar.png`
+- `Demon.png`
+- `Samurai.png`
+
+They are intentionally not included in this public-repository package because
+redistribution rights for third-party game art have not been verified.
+
+Add only assets you created yourself or are licensed to redistribute. If you
+have permission, copy the four files into the repository root before running.

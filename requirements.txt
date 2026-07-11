@@ -1,0 +1,173 @@
+import pygame, sys
+from fighter_class import Fighter
+from pygame.locals import *
+pygame.init()
+
+#Create Game Window
+SCREEN_WIDTH = 1700
+SCREEN_HEIGHT = 900
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Pixel Fighter")
+
+#Game Clock
+clock = pygame.time.Clock()
+FPS = 100
+
+#define fighter vaiables
+
+DEMON_ANIMATION_DICT = {
+    "ATTACK 1": 0,
+    "ATTACK 2": 1,
+    "ATTACK 3": 2,
+    "DASH ATTACK": 3,
+    "DASH": 4,
+    "DEATH": 5,
+    "DEFENCE": 6,
+    "HURT": 7,
+    "IDLE": 8,
+    "JUMP": 9,
+    "RUN": 10
+}
+
+DEMON_TIMING_DICT = {
+    "ATTACK 1": 70,
+    "ATTACK 2": 60,
+    "ATTACK 3": 50,
+    "DASH ATTACK": 50,
+    "DASH": 40,
+    "DEATH": 100,
+    "DEFENCE": 90,
+    "HURT": 150,
+    "IDLE": 100,
+    "JUMP": 150,
+    "RUN": 80
+}
+
+SAMURAI_ANIMATION_DICT = {
+    "AIR ATTACK": 0,
+    "ATTACK 1": 1,
+    "ATTACK 2": 2,
+    "ATTACK 3": 3,
+    "CLIMBING": 4,
+    "DASH": 5,
+    "DEATH": 6,
+    "DEFEND": 7,
+    "HEALING NO EFFECT": 8,
+    "HEALING": 9,
+    "HURT": 10,
+    "IDLE": 11,
+    "JUMP": 12,
+    "JUMP-FALL": 13,
+    "JUMP-START": 14,
+    "JUMP-TRANSITION": 15,
+    "RUN": 16,
+    "SPECIAL ATTACK": 17,
+    "THROW": 18,
+    "WALK": 19,
+    "WALL CONTACT": 20,
+    "WALL JUMP": 21,
+    "WALL SLIDE": 22
+}
+
+SAMURAI_TIMING_DICT = {
+    "AIR ATTACK": 90,
+    "ATTACK 1": 60 ,
+    "ATTACK 2": 30,
+    "ATTACK 3": 90,
+    "CLIMBING": 80,
+    "DASH": 40,
+    "DEATH": 80,
+    "DEFEND": 90,
+    "HEALING NO EFFECT": 50,
+    "HEALING": 50,
+    "HURT": 140,
+    "IDLE": 70,
+    "JUMP": 150,
+    "JUMP-FALL": 150,
+    "JUMP-START": 150,
+    "JUMP-TRANSITION": 150,
+    "RUN": 40,
+    "SPECIAL ATTACK": 60,
+    "THROW": 80,
+    "WALK": 70,
+    "WALL CONTACT": 150,
+    "WALL JUMP": 150,
+    "WALL SLIDE": 150
+}
+
+SAMURAI_SIZE = (96, 96)
+SAMURAI_SCALE = 6
+SAMURAI_OFFSET = [200, 235]
+SAMURAI_DATA = [SAMURAI_SIZE, SAMURAI_SCALE, SAMURAI_OFFSET, SAMURAI_ANIMATION_DICT, SAMURAI_TIMING_DICT, 2]
+DEMON_SIZE = (96, 64)
+DEMON_SCALE = 6
+DEMON_OFFSET = [200, 25]
+DEMON_DATA = [DEMON_SIZE, DEMON_SCALE, DEMON_OFFSET, DEMON_ANIMATION_DICT, DEMON_TIMING_DICT, 1]
+
+#Load Background Image
+temp_bg = pygame.image.load('background.PNG')
+bg_image = pygame.transform.scale(temp_bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
+GROUND_LEVEL = 815
+GROUND_HEIGHT = 85
+
+#Load Health Bar
+temp_hb = pygame.image.load('healthbar.png')
+health_bar_image = pygame.transform.scale(temp_hb, (305, 175))
+
+#load spritesheets
+demon_sheet = pygame.image.load('Demon.png').convert_alpha()
+samurai_sheet = pygame.image.load('Samurai.png').convert_alpha()
+
+#define number of steps in each animation
+DEMON_ANIMATION_STEPS = [5, 5, 10, 11, 8, 10, 6, 3, 5, 3, 7]
+SAMURAI_ANIMATION_STEPS = [6, 7, 7, 6, 8, 8, 9, 6, 15, 15, 4, 10, 3, 3, 3, 3, 16, 14, 7, 12, 3, 3, 3]
+
+#draw background
+def draw_bg():
+    screen.blit(bg_image, (0, 0))
+
+def draw_health_bar(health, x, y):
+    ratio = health / 100
+    pygame.draw.rect(screen, 'tomato4', (x, y, 223, 30))
+    pygame.draw.rect(screen, 'tomato', (x, y, 223 * ratio, 30))
+
+def draw_dash_bar(status, x, y):
+    pygame.draw.rect(screen, 'blue', (x, y, status, 30))
+    pygame.draw.rect(screen, 'black', (x, y, 255, 30), 5)
+#Create Two Instances Of Fighters
+player1 = Fighter(200, GROUND_LEVEL - 300 , False, DEMON_DATA, demon_sheet, DEMON_ANIMATION_STEPS)
+player2 = Fighter(1200, GROUND_LEVEL - 300, True,  SAMURAI_DATA, samurai_sheet, SAMURAI_ANIMATION_STEPS)
+
+#Game Loop
+while True:
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            sys.exit(0)
+        if event.type == KEYDOWN:
+            if event.key == K_ESCAPE:
+                sys.exit(0)
+    #Draw Background
+    draw_bg()
+    #show player stats
+    draw_health_bar(player1.health, 50, 64)
+    draw_health_bar(player2.health, 1350, 64)
+    screen.blit(health_bar_image, (0, 0))
+    screen.blit(health_bar_image, (1300, 0))
+    draw_dash_bar(player1.dash_status, 30, 110)
+    draw_dash_bar(player2.dash_status, 1330, 110)
+    print("\r", player1.facing_left, player1.facing_right, player1.attack_type, end = "")
+
+    #Move Fighters
+    player1.move(SCREEN_WIDTH, SCREEN_HEIGHT, GROUND_HEIGHT, screen, player2)
+    player2.move(SCREEN_WIDTH, SCREEN_HEIGHT, GROUND_HEIGHT, screen, player1)
+
+    #update fighters
+    player1.update()
+    player2.update()
+
+    #Draw Fighters
+    player1.draw(screen)
+    player2.draw(screen)
+
+    pygame.display.update()
+    clock.tick(FPS)
